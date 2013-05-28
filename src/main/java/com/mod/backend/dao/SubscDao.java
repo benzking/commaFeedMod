@@ -14,7 +14,8 @@ import java.util.List;
 public interface SubscDao {
     public Subscription save(Subscription subscrption);
     public Subscription save(String userId,String feedId,String subscTitle, String categoryID);
-    public List fecth(String userId);
-    public List fecth(String userId,String CategID);
+    public List query(String userId);
+    public List query(String userId,String CategID);
+    public Subscription fecth(String userId,String CategID);
 
 }

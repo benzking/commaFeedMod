@@ -5,6 +5,7 @@ import com.mod.backend.dao.ItemContentDao;
 import com.mod.backend.dao.ItemDao;
 import com.mod.backend.model.Item;
 import com.mod.backend.model.ItemContent;
+import com.mod.backend.model.ItemStatus;
 import com.mod.util.FENETKeyGenerator;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.joda.time.DateTime;
@@ -148,8 +149,70 @@ public class ItemDaoImp implements ItemDao {
 
         return item;
     }
+    public List<Item> queryForFeed(String feedId ,String ReadType) {
+        List<Item> items=null;
+        String sql="SELECT item.ID,item.GUID,item.GUIDHASH,item.URL, " +
+                "   content.id as contentId,content.title,content.content, " +
+                "   status.id as statusId,status.read,status.starred,status.subscid " +
+                "FROM item item " +
+                "left join itemcontent content on content.id=item.contentid " +
+                "left join itemstatus status on status.itemid=item.id " +
+                "WHERE item.feedid=:FEEDID ";
+        Map<String,Object> paramMap=Maps.newHashMap();
+        if(!ReadType.trim().equals("ALL")){
+            sql=sql+" and status.read=:READTYPE ";
+            paramMap.put("READTYPE",ReadType);
+        }
+        paramMap.put("FEEDID",feedId);
+        try{
+            items=(List<Item>)jdbcTemplate.query(sql,paramMap,new ItemAllRowMapper());
+        }catch (EmptyResultDataAccessException e){
+            return null;
+        }
 
+        return null;
+    }
+    public List<Item> queryForCate(String cateId ,String ReadType) {
 
+        Item item=null;
+        String sql="SELECT item.ID,item.GUID,item.GUIDHASH,item.CONTENTID, " +
+                "   item.URL,item.TITLE,item.LR_SJ,item.XG_SJ " +
+                " FROM item " +
+                " WHERE item.GUIDHASH=:GUIDHASH ";
+        Map<String,Object> paramMap=Maps.newHashMap();
+//        paramMap.put("GUIDHASH",DigestUtils.md5Hex(URI));
+        try{
+            item=(Item)jdbcTemplate.queryForObject(sql,paramMap,new ItemRowMapper());
+        }catch (EmptyResultDataAccessException e){
+            return null;
+        }
+
+        return null;
+    }
+    class ItemAllRowMapper implements RowMapper{
+        @Override
+        public Item mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Item item1=new Item();
+            item1.setId(rs.getString("ID"));
+            item1.setGuid(rs.getString("GUID"));
+            item1.setGuidHash(rs.getString("GUIDHASH"));
+            item1.setUrl(rs.getString("URL"));
+            item1.setTitle(rs.getString("title"));
+
+            ItemContent itemContent=new ItemContent();
+            itemContent.setId(rs.getString("contentId"));
+            itemContent.setTitle(rs.getString("title"));
+            itemContent.setContent(rs.getString("content"));
+            item1.setContent(itemContent);
+
+            ItemStatus itemStatus=new ItemStatus();
+            itemStatus.setId(rs.getString("statusId"));
+            itemStatus.setRead(rs.getString("read"));
+            itemStatus.setStarred(rs.getString("status"));
+//            itemStatus.set(rs.getString("subscid"));
+            return item1;
+        }
+    }
     class ItemRowMapper implements RowMapper{
         @Override
         public Item mapRow(ResultSet rs, int rowNum) throws SQLException {

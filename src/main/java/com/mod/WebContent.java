@@ -22,7 +22,7 @@ public class WebContent {
     public final static ExecutorService feedUpTaskBusservice = Executors
             .newSingleThreadExecutor();
     public final static ExecutorService feedUpTaskService = Executors
-            .newFixedThreadPool(4);
+            .newFixedThreadPool(1);
     public final static BlockingQueue feedUpTaskQueue = Queues.newArrayBlockingQueue(100);
     public static Boolean isUpdateFeed;
     public void init(ApplicationContext applicationContext){
@@ -31,7 +31,7 @@ public class WebContent {
         isUpdateFeed=true;
         FeedTaskBus feedTaskBus=applicationContext.getBean(FeedTaskBus.class);
         feedUpTaskBusservice.submit(feedTaskBus);
-        for (int index = 0; index < 4; index++) {
+        for (int index = 0; index < 1; index++) {
             FeedUpdater feedUpdater=applicationContext.getBean(FeedUpdater.class);
             feedUpTaskService.submit(feedUpdater);
         }
